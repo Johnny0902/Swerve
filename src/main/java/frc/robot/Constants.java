@@ -14,7 +14,6 @@ package frc.robot;
  */
 public final class Constants {
 
-  //
   public static final double Dimension_Q1_X = 0.381;
   public static final double Dimension_Q1_Y = 0.381;
   public static final double Dimension_Q2_X = 0.381;
@@ -24,6 +23,35 @@ public final class Constants {
   public static final double Dimension_Q4_X = -0.381;
   public static final double Dimension_Q4_Y = 0.381;
 
+  public static class frontLeftModule {
+    public static final int driveMotorChannel = 0;
+    public static final int turningMotorChannel = 1;
+    public static final int absoluteChannel = 2;
+    public static final int canCoderDeviceNumber = 3;
+  }
+
+  public static class frontRightModule {
+    public static final int driveMotorChannel = 4;
+    public static final int turningMotorChannel = 5;
+    public static final int absoluteChannel = 6;
+    public static final int canCoderDeviceNumber = 7;
+  }
+
+  public static class backLeftModule {
+    public static final int driveMotorChannel = 8;
+    public static final int turningMotorChannel = 9;
+    public static final int absoluteChannel = 10;
+    public static final int canCoderDeviceNumber = 11;
+  }
+
+  public static class backRightModule {
+    public static final int driveMotorChannel = 12;
+    public static final int turningMotorChannel = 13;
+    public static final int absoluteChannel = 14;
+    public static final int canCoderDeviceNumber = 15;
+  }
+
+  public static final int gyroChannel = 0;
   
 
   public static class OperatorConstants {
