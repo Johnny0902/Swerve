@@ -150,6 +150,11 @@ public class SwerveModule extends SubsystemBase {
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
   }
 
+  /** Zeroes all the SwerveModule encoders. */
+  public void resetEncoders() {
+    m_driveEncoder.setPosition(0.0);
+    m_turningEncoder.setPosition(0.0);
+  }
 
   @Override
   public void periodic() {
