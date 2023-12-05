@@ -13,7 +13,21 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final double maximumSpeed = 3.0;
+  public static final double angleGearRatio = 12.8;
+  public static final double driveGearRatio = 6.75;
+  public static final double pulsePerRotation = 1;
+  public static final double wheelDiameter = 0.1; //this is in meters
+  public static final boolean headingCorrection = false;
 
+
+
+
+
+
+
+
+//_________________________________________________________________________________________________
   public static final double Dimension_Q1_X = 0.381;
   public static final double Dimension_Q1_Y = 0.381;
   public static final double Dimension_Q2_X = 0.381;
