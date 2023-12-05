@@ -4,22 +4,28 @@
 
 package frc.robot.commands.Swerve.Drivebase;
 
+import java.util.List;
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain_YAGSL;
+import swervelib.SwerveController;
+import swervelib.math.SwerveMath;
 
 
 public class AbsoluteDrive extends CommandBase {
-  private final Subsystem swerve;
+  private final Drivetrain_YAGSL swerve;
   private final DoubleSupplier vX, vY;
   private final DoubleSupplier headingHorizontal, headingVertical;
   private boolean initRotation = false;
 
 
-  public AbsoluteDrive(Subsystem swerve, 
+  public AbsoluteDrive(Drivetrain_YAGSL swerve, 
                       DoubleSupplier vX, 
                       DoubleSupplier vY, 
                       DoubleSupplier headingHorizontal,
@@ -46,6 +52,28 @@ public class AbsoluteDrive extends CommandBase {
     headingHorizontal.getAsDouble(),
     headingVertical.getAsDouble());
 
+    if(initRotation)
+    {
+      if(headingHorizontal.getAsDouble() == 0 && headingVertical.getAsDouble() == 0)
+      {
+        // Get the curretHeading
+        double firstLoopHeading = swerve.getHeading().getRadians();
+      
+        // Set the Current Heading to the desired Heading
+        desiredSpeeds = swerve.getTargetSpeeds(0, 0, Math.sin(firstLoopHeading), Math.cos(firstLoopHeading));
+      }
+      //Dont Init Rotation Again
+      initRotation = false;
+    }
+
+    Translation2d translation = SwerveController.getTranslation2d(desiredSpeeds);
+    translation = SwerveMath.limitVelocity(translation, swerve.getFieldVelocity(), swerve.getPose(),
+                                           Constants.LOOP_TIME, Constants.ROBOT_MASS, List.of(Constants.CHASSIS),
+                                           swerve.getSwerveDriveConfiguration());
+    SmartDashboard.putNumber("LimitedTranslation", translation.getX());
+    SmartDashboard.putString("Translation", translation.toString());
+
+    swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, true);
   }
 
   // Called once the command ends or is interrupted.
