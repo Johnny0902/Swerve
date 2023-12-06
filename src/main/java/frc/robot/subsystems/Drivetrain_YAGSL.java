@@ -42,7 +42,7 @@ public class Drivetrain_YAGSL extends SubsystemBase {
   private SwerveDrive swerveDrive;
   private SwerveAutoBuilder autoBuilder = null;
 
-  public void SwerveSubsystem(File directory){
+  public Drivetrain_YAGSL(File directory){
     double angleConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(
       Constants.angleGearRatio, Constants.pulsePerRotation);
     
@@ -70,6 +70,7 @@ public class Drivetrain_YAGSL extends SubsystemBase {
       swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.maximumSpeed);
     }
   
+
   public void drive(Translation2d translation, double rotation, boolean fieldRelative)
   {
     swerveDrive.drive(translation,

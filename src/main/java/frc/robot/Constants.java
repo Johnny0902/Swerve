@@ -27,6 +27,18 @@ public final class Constants {
   public static final Matter CHASSIS = new Matter(
     new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+  public static final int PathPlannerServerNumber_serverport = 5811;
+  public static final int CommandJoystickPort = 1;
+  public static final int XboxControllerPort = 0;
+  public static final double WHEEL_LOCK_TIME = 10; // seconds
+
+  public static class OperatorConstants
+  {
+    // Joystick Deadband
+    public static final double LEFT_X_DEADBAND = 0.01;
+    public static final double LEFT_Y_DEADBAND = 0.01;
+  }
+
 
 
 
@@ -77,7 +89,7 @@ public final class Constants {
   public static final int gyroChannel = 0;
   
 
-  public static class OperatorConstants {
+  public static class OperatorConstantsold {
     public static final int kDriverControllerPort = 0;
   }
 }

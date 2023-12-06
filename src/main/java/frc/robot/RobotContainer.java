@@ -5,11 +5,25 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.Swerve.Drivebase.AbsoluteDrive;
+import frc.robot.commands.Swerve.Drivebase.AbsoluteFieldDrive;
+import frc.robot.commands.Swerve.Drivebase.TeleopDrive;
+import frc.robot.commands.Swerve.auto.Autos;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Drivetrain_YAGSL;
+
+import java.io.File;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 // I PUT THIS HERE AND ALL CAP BECAUSE THIS IS REALLY IMPORTANT, THE RUN COMMAND DRIVE SETS ROTATION
@@ -25,36 +39,56 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   // The robot's subsystems
-  private final Drivetrain m_robotDrive = new Drivetrain();
+  private final Drivetrain_YAGSL drivebase = new Drivetrain_YAGSL(
+    new File(Filesystem.getDeployDirectory(), "swerve/neo"));
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   // The driver's controller
-  XboxController m_driverController = new XboxController(
-    Constants.OperatorConstants.kDriverControllerPort);
+  CommandJoystick driverController = new CommandJoystick(Constants.CommandJoystickPort);
+  XboxController driverXbox = new XboxController(Constants.XboxControllerPort);
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
 
-    // Configure default commands
-    m_robotDrive.setDefaultCommand(
-      // The left stick controls translation of the robot.
-      // Turning is controlled by the X axis of the right stick.
-      new RunCommand(
-          () ->
-              m_robotDrive.drive(
-                  // Multiply by max speed to map the joystick unitless inputs to actual units.
-                  // This will map the [-1, 1] to [max speed backwards, max speed forwards],
-                  // converting them to actual units.
-                  m_driverController.getLeftY() * Drivetrain.kMaxSpeed,
-                  m_driverController.getLeftX() * Drivetrain.kMaxSpeed,
-                  m_driverController.getRightX()
-                      * Drivetrain.kMaxAngularSpeed,
-                  false, 
-                  null),
-          m_robotDrive));
+    AbsoluteDrive closedAbsoluteDrive = new AbsoluteDrive(drivebase,
+      // Applies deadbands and inverts controls because joysticks
+      // are back-right positive while robot
+      // controls are front-left positive
+      () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
+                                    OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
+                                    OperatorConstants.LEFT_X_DEADBAND),
+      () -> -driverXbox.getRightX(),
+      () -> -driverXbox.getRightY());
+
+      AbsoluteFieldDrive closedFieldAbsoluteDrive = new AbsoluteFieldDrive(drivebase,
+      () ->
+          MathUtil.applyDeadband(driverXbox.getLeftY(),
+                                 OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
+                                   OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverXbox.getRawAxis(2));
+
+      TeleopDrive simClosedFieldRel = new TeleopDrive(drivebase,
+      () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
+                                   OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
+                                   OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverXbox.getRawAxis(2), () -> true);
+
+      TeleopDrive closedFieldRel = new TeleopDrive(
+        drivebase,
+        () -> MathUtil.applyDeadband(driverController.getY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverController.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> -driverController.getRawAxis(3), () -> true);
+
+    drivebase.setDefaultCommand(!RobotBase.isSimulation() ? closedAbsoluteDrive : closedFieldAbsoluteDrive);
   }
+
+
 
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -73,7 +107,29 @@ public class RobotContainer {
     // // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // // cancelling on release.
     // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+
+    new JoystickButton(driverXbox, 1).onTrue(
+      (new InstantCommand(drivebase::zeroGyro)));
+    new JoystickButton(driverXbox, 3).onTrue(
+      new InstantCommand(drivebase::addFakeVisionReading));
   }
+
+  public Command getAutonomousCommand()
+  {
+    // An example command will be run in autonomous
+    return Autos.exampleAuto(drivebase);
+  }
+
+  public void setDriveMode()
+  {
+    //drivebase.setDefaultCommand();
+  }
+
+  public void setMotorBrake(boolean brake)
+  {
+    drivebase.setMotorBrake(brake);
+  }
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
